@@ -1,16 +1,13 @@
-pub mod error;
-pub mod request_validator;
-pub mod response_validator;
-pub mod parameter_validator;
-pub mod spec_loader;
 pub mod api_validator;
-pub mod spec_builder;
+pub mod drift_types;
+pub mod error;
+pub mod spec;
+pub mod validation_helpers;
+pub mod validators;
 
-pub use error::ValidationError;
-pub use request_validator::RequestBodyValidator;
-pub use response_validator::ResponseValidator;
-pub use parameter_validator::{ParameterValidator, ParametersValidator};
-pub use spec_loader::load_openapi_spec;
 pub use api_validator::{ApiValidator, HttpMethod, OperationValidator};
-pub use spec_builder::build_api_validator;
-
+pub use drift_types::{map_to_drift_type, DriftType, ValidationContext};
+pub use error::ValidationError;
+pub use spec::{build_api_validator, load_openapi_spec, ResolveReference};
+pub use validation_helpers::{build_validator, format_drift_error, format_instance_location};
+pub use validators::{ParameterValidator, ParametersValidator, RequestBodyValidator, ResponseValidator};

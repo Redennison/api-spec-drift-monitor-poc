@@ -14,4 +14,3 @@ pub enum ValidationError {
     #[error("Failed to compile JSON schema: {0}")]
     SchemaCompilationError(String),
 }
-

@@ -1,14 +1,13 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
   title: Simple Test API
   version: 1.0.0
-  description: A simple API for testing without references
+  description: A minimal API spec for testing validation
 
 paths:
   /users:
     get:
-      summary: List all users
-      operationId: listUsers
+      summary: List users
       parameters:
         - name: limit
           in: query
@@ -16,14 +15,14 @@ paths:
             type: integer
             minimum: 1
             maximum: 100
-        - name: offset
+        - name: status
           in: query
           schema:
-            type: integer
-            minimum: 0
+            type: string
+            enum: [active, inactive]
       responses:
         '200':
-          description: Success
+          description: List of users
           content:
             application/json:
               schema:
@@ -34,222 +33,134 @@ paths:
                   users:
                     type: array
                     items:
-                      type: object
-                      required:
-                        - id
-                        - username
-                        - email
-                      properties:
-                        id:
-                          type: integer
-                        username:
-                          type: string
-                          minLength: 3
-                          maxLength: 50
-                        email:
-                          type: string
-                          format: email
-                        age:
-                          type: integer
-                          minimum: 0
-                          maximum: 150
-                  total:
-                    type: integer
-
+                      $ref: '#/components/schemas/User'
     post:
-      summary: Create a new user
-      operationId: createUser
-      parameters:
-        - name: x-api-key
-          in: header
-          required: true
-          schema:
-            type: string
+      summary: Create user
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - username
-                - email
-                - password
-              properties:
-                username:
-                  type: string
-                  minLength: 3
-                  maxLength: 50
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  minLength: 8
-                age:
-                  type: integer
-                  minimum: 13
-                  maximum: 150
+              $ref: '#/components/schemas/CreateUserRequest'
       responses:
         '201':
-          description: User created successfully
+          description: User created
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - id
-                  - username
-                  - email
-                properties:
-                  id:
-                    type: integer
-                  username:
-                    type: string
-                  email:
-                    type: string
-                  createdAt:
-                    type: string
-                    format: date-time
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - error
-                  - message
-                properties:
-                  error:
-                    type: string
-                  message:
-                    type: string
+                $ref: '#/components/schemas/User'
 
   /users/{userId}:
     get:
-      summary: Get a user by ID
-      operationId: getUser
+      summary: Get user by ID
       parameters:
         - name: userId
           in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - id
-                  - username
-                  - email
-                properties:
-                  id:
-                    type: integer
-                  username:
-                    type: string
-                  email:
-                    type: string
-                  age:
-                    type: integer
-                  createdAt:
-                    type: string
-                    format: date-time
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - error
-                properties:
-                  error:
-                    type: string
-
-    put:
-      summary: Update a user
-      operationId: updateUser
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  minLength: 3
-                email:
-                  type: string
-                  format: email
-                age:
-                  type: integer
-                  minimum: 13
-      responses:
-        '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - id
-                  - username
-                  - email
-                properties:
-                  id:
-                    type: integer
-                  username:
-                    type: string
-                  email:
-                    type: string
-                  age:
-                    type: integer
-
-    delete:
-      summary: Delete a user
-      operationId: deleteUser
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-        - name: x-api-key
-          in: header
           required: true
           schema:
             type: string
       responses:
-        '204':
-          description: User deleted successfully
+        '200':
+          description: User details
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
+                $ref: '#/components/schemas/User'
         '404':
           description: User not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+                $ref: '#/components/schemas/Error'
+
+  /posts:
+    get:
+      summary: List posts
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - name
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        age:
+          type: integer
+          minimum: 0
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+
+    UserProfile:
+      type: object
+      properties:
+        bio:
+          type: string
+        location:
+          type: string
+        website:
+          type: string
+          format: uri
+
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        age:
+          type: integer
+          minimum: 0
+
+    Post:
+      type: object
+      required:
+        - id
+        - title
+        - author
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        tags:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
